@@ -29,15 +29,3 @@ export function useEducationData (filters: any, page: number, pageSize: number){
         placeholderData: keepPreviousData,
     })
 }
-
-
-
-
-
-
-
-
-
-
-
-

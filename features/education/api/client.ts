@@ -1,34 +1,27 @@
-// Base URL for the UK Department for Education EES API
-const BASE_URL = 'https://explore-education-statistics.service.gov.uk/api';
-
-
 /**
- * Step 1: Fetch Metadata
- * Used to discover dimensions (years, regions) before we query the actual data
+ * Instead of hitting the DfE API directly, we hit our local Next.js route.
  */
-export async function fetchMetadata (datasetId: string){
-    const res = await fetch (`${BASE_URL}/data/v1/datasets/${datasetId}/metadata`);
-    if (!res.ok) throw new Error('Failed to fetch metadata');
+
+export async function fetchMetadata(datasetId: string) {
+    const res = await fetch(`/api/education?datasetId=${datasetId}&endpoint=metadata`);
+    if (!res.ok) throw new Error('Failed to fetch metadata via proxy');
     return res.json();
-}
-
-
-/**
- * Step 2: Fetch Paged Data
- * Sends pagination and filter params to thee server
- */
-export async function fetchTableData(datasetId: string, params: any){
-    // This handles the server-driven pagination and filtering
-    const queryParams = new URLSearchParams(params).toString();
-    const res = await fetch(`${BASE_URL}/data/v1/datasets/${datasetId}/query?${queryParams}`);
-    if (!res.ok) throw new Error ('Failed to fetch data');
-
-    // The API returns a large JSON object containing the data rows and total count
+  }
+  
+  export async function fetchTableData(datasetId: string, params: Record<string, any>) {
+    // Construct the query string for proxy
+    const queryParams = new URLSearchParams({
+      datasetId,
+      endpoint: 'query',
+      ...params // Pass through pagination/filters
+    });
+  
+    const res = await fetch(`/api/education?${queryParams.toString()}`);
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || 'Failed to fetch data via proxy');
+    }
+    
     return res.json();
-}
-
-
-
-
-
-
+  }
